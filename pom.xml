@@ -1,11 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>qa.translate</groupId>
-  <artifactId>wireapps-assignment-google-translate-bdd</artifactId>
-  <version>1.0.0</version>
+  <groupId>com.demo</groupId>
+  <artifactId>selenium-bdd</artifactId>
+  <version>1.0-SNAPSHOT</version>
 
   <properties>
     <maven.compiler.source>21</maven.compiler.source>
@@ -14,9 +15,7 @@
 
     <selenium.version>4.22.0</selenium.version>
     <cucumber.version>7.18.1</cucumber.version>
-    <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <webdrivermanager.version>5.9.2</webdrivermanager.version>
-    <slf4j.version>2.0.13</slf4j.version>
   </properties>
 
   <dependencies>
@@ -34,34 +33,28 @@
       <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Cucumber JUnit4 Runner -->
     <dependency>
       <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <artifactId>cucumber-junit</artifactId>
       <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- JUnit 5 -->
+    <!-- JUnit 4 -->
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- WebDriverManager -->
+    <!-- WebDriverManager (optional but useful) -->
     <dependency>
       <groupId>io.github.bonigarcia</groupId>
       <artifactId>webdrivermanager</artifactId>
       <version>${webdrivermanager.version}</version>
-    </dependency>
-
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${slf4j.version}</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -71,13 +64,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
-        <configuration>
-          <includes>
-            <include>**/*Runner.java</include>
-            <include>**/*Test.java</include>
-          </includes>
-        </configuration>
       </plugin>
     </plugins>
   </build>
+
 </project>
