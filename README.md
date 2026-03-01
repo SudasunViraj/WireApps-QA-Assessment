@@ -27,7 +27,7 @@ The framework supports:
 
 ---
 
-# 🏗️ Framework Architecture
+## 🏗️ Framework Architecture
 
 The framework follows a clean and simple layered structure:
 
@@ -67,9 +67,9 @@ selenium-bdd/
 
 ---
 
-# ⚙️ Setup Instructions
+## ⚙️ Setup Instructions
 
-## 1️⃣ Prerequisites
+### 1️⃣ Prerequisites
 
 * Java 21 (or 17+)
 * Maven 3.8+
@@ -85,7 +85,7 @@ mvn -version
 
 ---
 
-## 2️⃣ Clone the Repository
+### 2️⃣ Clone the Repository
 
 ```bash
 git clone <your-repository-url>
@@ -94,7 +94,7 @@ cd selenium-bdd
 
 ---
 
-## 3️⃣ Install Dependencies
+### 3️⃣ Install Dependencies
 
 ```bash
 mvn clean install
@@ -102,11 +102,11 @@ mvn clean install
 
 ---
 
-# 🚀 How to Execute Tests
+## 🚀 How to Execute Tests
 
 ---
 
-## ▶ Run Full Regression Suite
+### ▶ Run Full Regression Suite
 
 ```bash
 mvn clean test -Pregression
@@ -120,7 +120,7 @@ mvn clean test -Dcucumber.filter.tags="@regression"
 
 ---
 
-## ▶ Run Individual Test Case
+### ▶ Run Individual Test Case
 
 | Test Case            | Command                    |
 | -------------------- | -------------------------- |
@@ -139,7 +139,7 @@ mvn test -Dcucumber.filter.tags="@TC_ENG_SI"
 
 ---
 
-# 📊 Test Coverage
+## 📊 Test Coverage
 
 ### ✅ Automated Test Scenarios
 
@@ -152,7 +152,7 @@ mvn test -Dcucumber.filter.tags="@TC_ENG_SI"
 
 ---
 
-# 🧩 Configuration
+## 🧩 Configuration
 
 Configuration file:
 
@@ -176,7 +176,7 @@ mvn test -Dheadless=true
 
 ---
 
-# 📈 Reporting
+## 📈 Reporting
 
 After execution, reports are generated under:
 
@@ -195,7 +195,7 @@ In your browser to view execution summary.
 
 ---
 
-# 🛠 Design Decisions
+## 🛠 Design Decisions
 
 ### ✔ Page Object Model (POM)
 
@@ -221,7 +221,7 @@ Supports:
 
 ---
 
-# ⚠️ Limitations
+## ⚠️ Limitations
 
 * Google Translate UI is dynamic and may change
 * Translation results may slightly vary (AI-based)
@@ -230,7 +230,7 @@ Supports:
 
 ---
 
-# 📌 Future Enhancements
+## 📌 Future Enhancements
 
 * Parallel execution
 * CI/CD integration (GitHub Actions)
@@ -240,13 +240,14 @@ Supports:
 
 ---
 
-# 👨‍💻 Author
+## 👨‍💻 Author
 
+Sudasun Malaviarachchi-Quality Engineer
 Developed as part of a QA Automation technical assessment.
 
 ---
 
-# 🏁 Final Notes
+## 🏁 Final Notes
 
 This framework is intentionally designed to be:
 
