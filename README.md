@@ -242,8 +242,8 @@ Supports:
 
 ## 👨‍💻 Author
 
-Sudasun Malaviarachchi-Quality Engineer
-Developed as part of a QA Automation technical assessment.
+* Sudasun Malaviarachchi-Quality Engineer
+* Developed as part of a QA Automation technical assessment.
 
 ---
 
