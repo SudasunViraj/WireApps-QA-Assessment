@@ -35,7 +35,7 @@ Feature: Google Translate Regression Suite
     And I select "Images" tab
     And I select "English" as source language
     And I select "Sinhala" as target language
-    When I upload file "en_image.png"
+    When I upload file "sinhala.png"
     Then Download button should be available
     When I click Download
 
@@ -45,7 +45,7 @@ Feature: Google Translate Regression Suite
     And I select "Documents" tab
     And I select "English" as source language
     And I select "Sinhala" as target language
-    When I upload file "en_doc.pdf"
+    When I upload file "sinhala.docx"
     Then Download button should be available
     When I click Download
 
