@@ -1,193 +1,202 @@
 package pages;
 
+import core.DriverFactory;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Duration;
-import java.util.List;
-
-import static core.DriverFactory.*;
 
 public class GoogleTranslatePage {
 
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+    private final WebDriver driver = DriverFactory.getDriver();
+    private final WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(DriverFactory.getIntProp("timeoutSeconds")));
 
-    public GoogleTranslatePage() {
-        this.driver = getDriver();
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(getIntProp("timeoutSeconds")));
-        this.wait.ignoring(StaleElementReferenceException.class);
+    // ---------- Tabs ----------
+    private By tabByName(String tab) {
+        // Google often uses role=tab
+        return By.xpath("//*[(@role='tab' or self::button) and normalize-space()='" + tab + "']");
     }
 
-    // ====== Locators (keep tolerant because Google UI can change) ======
+    // ---------- Language menus (tolerant) ----------
+    private final By sourceLangMoreBtn = By.cssSelector("button[aria-label*='More source languages'], button[aria-label*='source language']");
+    private final By targetLangMoreBtn = By.cssSelector("button[aria-label*='More target languages'], button[aria-label*='target language']");
+    private final By languageSearchInput = By.cssSelector("input[aria-label*='Search languages'], input[aria-label*='Search']");
 
-    private By sourceTextArea() {
-        // Source textarea usually has aria-label; hl=en helps keep stable
-        return By.cssSelector("textarea[aria-label]");
+    // Selected language labels on the top bar (best-effort)
+    private final By selectedSourceLangLabel = By.xpath("(//button[contains(@aria-label,'source') or contains(@aria-label,'Source')]//*[self::span or self::div])[last()]");
+    private final By selectedTargetLangLabel = By.xpath("(//button[contains(@aria-label,'target') or contains(@aria-label,'Target')]//*[self::span or self::div])[last()]");
+
+    // ---------- Text input/output ----------
+    private final By sourceTextArea = By.cssSelector("textarea[aria-label]");
+    private final By outputNonEmpty = By.cssSelector("div[aria-live='polite'] span");
+
+    // ---------- Swap ----------
+    private final By swapButton = By.cssSelector("button[aria-label*='Swap'], button[aria-label*='swap']");
+
+    // ---------- Upload (Images/Documents) ----------
+    private final By fileInput = By.cssSelector("input[type='file']");
+    private final By downloadBtn = By.xpath("//button[contains(.,'Download') or contains(.,'download')] | //a[contains(.,'Download') or contains(.,'download')]");
+
+    // ---------- Websites ----------
+    private final By websiteUrlInput = By.cssSelector("input[type='url'], input[aria-label*='Website']");
+    private final By websiteArrowBtn = By.cssSelector("button[aria-label*='Translate'], button[aria-label*='translate'], button[aria-label*='Go'], button[aria-label*='Arrow']");
+    private final By anyIframe = By.cssSelector("iframe");
+
+    // ---------- Consent / cookies ----------
+    private final By consentButtons = By.xpath(
+            "//button//*[contains(.,'Accept all') or contains(.,'I agree') or contains(.,'Agree') or contains(.,'Accept')]" +
+            "/ancestor::button[1]"
+    );
+
+    public void navigateHome() {
+        driver.get(DriverFactory.getProp("baseUrl"));
+        acceptConsentIfPresent();
+        waitForReady();
     }
 
-    private By swapButton() {
-        // Try common aria label first
-        return By.cssSelector("button[aria-label*='Swap'], button[aria-label*='swap']");
+    public void selectTab(String tabName) {
+        WebElement tab = wait.until(ExpectedConditions.elementToBeClickable(tabByName(tabName)));
+        tab.click();
+        waitForReady();
+        acceptConsentIfPresent();
     }
 
-    private By clearButton() {
-        return By.cssSelector("button[aria-label*='Clear'], button[aria-label*='clear']");
+    public void selectSourceLanguage(String language) {
+        openLanguageMenu(true);
+        searchAndSelectLanguage(language);
     }
 
-    private By imagesTab() {
-        // Role tab often used; fallback to text match
-        return By.xpath("//button[@role='tab' and (contains(.,'Images') or contains(.,'Image'))] | //div[@role='tab' and (contains(.,'Images') or contains(.,'Image'))]");
-    }
-
-    private By documentsTab() {
-        return By.xpath("//button[@role='tab' and contains(.,'Documents')] | //div[@role='tab' and contains(.,'Documents')]");
-    }
-
-    private By uploadInputFile() {
-        // Most upload widgets end up as <input type="file">
-        return By.cssSelector("input[type='file']");
-    }
-
-    private By downloadTranslationButton() {
-        // Document translation typically offers "Download translation"
-        return By.xpath("//a[contains(.,'Download') or contains(.,'download')] | //button[contains(.,'Download') or contains(.,'download')]");
-    }
-
-    // Output area: do NOT assert exact translation text; just assert some non-empty result appears
-    private By outputCandidates() {
-        return By.cssSelector("div[aria-live='polite'] span, [data-result-index] span, span");
-    }
-
-    // ====== Core actions ======
-
-    public void openTextTranslate(String sl, String tl) {
-        // Force known state via URL parameters (most stable way)
-        // sl=source language, tl=target language
-        String url = "https://translate.google.com/?hl=en&op=translate&sl=" + encode(sl) + "&tl=" + encode(tl);
-        driver.get(url);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(sourceTextArea()));
+    public void selectTargetLanguage(String language) {
+        openLanguageMenu(false);
+        searchAndSelectLanguage(language);
     }
 
     public void enterSourceText(String text) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(sourceTextArea()));
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(sourceTextArea));
         input.click();
         input.clear();
         input.sendKeys(text);
     }
 
-    public void clearSource() {
+    public boolean waitForTranslationTextToAppear() {
         try {
-            WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(clearButton()));
-            btn.click();
-        } catch (Exception e) {
-            driver.findElement(sourceTextArea()).clear();
-        }
-    }
-
-    public String getSourceValue() {
-        return driver.findElement(sourceTextArea()).getAttribute("value");
-    }
-
-    public void clickSwap() {
-        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(swapButton()));
-        btn.click();
-    }
-
-    public boolean waitForAnyTranslationOutput() {
-        // Wait until any visible candidate element has non-empty text
-        try {
-            return wait.until(d -> {
-                List<WebElement> els = d.findElements(outputCandidates());
-                for (WebElement el : els) {
-                    if (!el.isDisplayed()) continue;
-                    String t = el.getText();
-                    if (t != null && !t.trim().isEmpty()) {
-                        // ensure not just the same input echoed; we only need "some output"
-                        return true;
-                    }
-                }
-                return false;
-            });
+            return wait.until(d -> d.findElements(outputNonEmpty).stream()
+                    .map(WebElement::getText)
+                    .anyMatch(t -> t != null && !t.trim().isEmpty()));
         } catch (TimeoutException e) {
             return false;
         }
     }
 
-    // ====== Images translation ======
-    public void goToImagesTab() {
-        WebElement tab = wait.until(ExpectedConditions.elementToBeClickable(imagesTab()));
-        tab.click();
-        wait.until(ExpectedConditions.presenceOfElementLocated(uploadInputFile()));
+    public void clickSwap() {
+        wait.until(ExpectedConditions.elementToBeClickable(swapButton)).click();
+        waitForReady();
     }
 
-    public void uploadImageFromResources(String resourcePath) {
-        // resourcePath example: "testdata/sinhala.png"
-        Path fileOnDisk = extractResourceToTemp(resourcePath);
-        WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(uploadInputFile()));
-        fileInput.sendKeys(fileOnDisk.toAbsolutePath().toString());
-    }
-
-    // ====== Documents translation ======
-    public void goToDocumentsTab() {
-        WebElement tab = wait.until(ExpectedConditions.elementToBeClickable(documentsTab()));
-        tab.click();
-        wait.until(ExpectedConditions.presenceOfElementLocated(uploadInputFile()));
-    }
-
-    public void uploadDocumentFromResources(String resourcePath) {
-        Path fileOnDisk = extractResourceToTemp(resourcePath);
-        WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(uploadInputFile()));
-        fileInput.sendKeys(fileOnDisk.toAbsolutePath().toString());
-    }
-
-    public boolean waitForDownloadButton() {
+    public String getSelectedSourceLanguage() {
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(downloadTranslationButton()));
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(selectedSourceLangLabel)).getText().trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public String getSelectedTargetLanguage() {
+        try {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(selectedTargetLangLabel)).getText().trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    // ---------- Images/Documents ----------
+    public void uploadFileFromResources(String resourceRelativePathUnderTestdata) {
+        Path filePath = extractResourceToTemp("testdata/" + resourceRelativePathUnderTestdata);
+        WebElement input = wait.until(ExpectedConditions.presenceOfElementLocated(fileInput));
+        input.sendKeys(filePath.toAbsolutePath().toString());
+    }
+
+    public void clickDownloadIfAvailable() {
+        wait.until(ExpectedConditions.elementToBeClickable(downloadBtn)).click();
+    }
+
+    public boolean waitForDownloadButtonVisible() {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(downloadBtn));
             return true;
         } catch (TimeoutException e) {
             return false;
         }
     }
 
-    // ====== Website translation ======
-    public void openWebsiteTranslation(String from, String to, String websiteUrl) {
-        // Reliable pattern: translate.google.com/translate?sl=en&tl=si&u=...
-        String url = "https://translate.google.com/translate?sl=" + encode(from) +
-                "&tl=" + encode(to) +
-                "&u=" + encode(websiteUrl);
-        driver.get(url);
+    // ---------- Websites ----------
+    public void enterWebsiteUrl(String url) {
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(websiteUrlInput));
+        input.click();
+        input.clear();
+        input.sendKeys(url);
     }
 
-    public boolean waitForTranslatedWebsiteToLoad() {
-        // The translated web page often loads inside an iframe, but Google can change this.
-        // We'll wait for either an iframe OR evidence of a translated page container.
+    public void clickWebsiteArrow() {
+        wait.until(ExpectedConditions.elementToBeClickable(websiteArrowBtn)).click();
+    }
+
+    public boolean waitForTranslatedWebsite() {
         try {
-            return wait.until(d -> {
-                boolean hasIframe = !d.findElements(By.cssSelector("iframe")).isEmpty();
-                boolean hasBodyText = d.findElement(By.tagName("body")).getText().length() > 30;
-                return hasIframe || hasBodyText;
-            });
-        } catch (Exception e) {
+            return wait.until(d -> !d.findElements(anyIframe).isEmpty() || d.getTitle() != null);
+        } catch (TimeoutException e) {
             return false;
         }
     }
 
-    // ====== Helpers ======
+    // ---------- internal helpers ----------
+    private void openLanguageMenu(boolean isSource) {
+        By btn = isSource ? sourceLangMoreBtn : targetLangMoreBtn;
+        wait.until(ExpectedConditions.elementToBeClickable(btn)).click();
+        acceptConsentIfPresent();
+    }
 
-    private static String encode(String s) {
-        return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    private void searchAndSelectLanguage(String language) {
+        // Search field
+        WebElement search = wait.until(ExpectedConditions.visibilityOfElementLocated(languageSearchInput));
+        search.click();
+        search.clear();
+        search.sendKeys(language);
+
+        // Select the language option - best effort and tolerant
+        By option = By.xpath(
+                "//*[@role='option' or @role='menuitem' or @data-language-code]" +
+                "[.//*[normalize-space()='" + language + "'] or normalize-space()='" + language + "']"
+        );
+
+        wait.until(ExpectedConditions.elementToBeClickable(option)).click();
+        waitForReady();
+    }
+
+    private void acceptConsentIfPresent() {
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(3));
+            WebElement btn = shortWait.until(ExpectedConditions.elementToBeClickable(consentButtons));
+            btn.click();
+        } catch (Exception ignored) {
+            // no consent popup
+        }
+    }
+
+    private void waitForReady() {
+        try {
+            wait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+        } catch (Exception ignored) {}
     }
 
     private static Path extractResourceToTemp(String resourcePath) {
         try (InputStream is = GoogleTranslatePage.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (is == null) throw new RuntimeException("Test data not found: src/test/resources/" + resourcePath);
-
+            if (is == null) {
+                throw new RuntimeException("Test data not found: src/test/resources/" + resourcePath);
+            }
             String fileName = Path.of(resourcePath).getFileName().toString();
             Path temp = Files.createTempFile("gt_", "_" + fileName);
             Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);

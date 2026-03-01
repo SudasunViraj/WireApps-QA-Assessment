@@ -1,39 +1,60 @@
 @regression
 Feature: Google Translate Regression Suite
 
-  @TC_ENG_SI
-  Scenario: Translate English sentence to Sinhala
-    Given I open text translate from "en" to "si"
-    When I translate the text "Good morning. Please submit the report by 5 PM."
-    Then I should see translation output
+  @TC_TEXT_EN_SI
+  Scenario: EN to SI translation
+    Given I navigate to Google Translate
+    And I select "Text" tab
+    And I select "English" as source language
+    And I select "Sinhala" as target language
+    When I enter source text "Good morning. Please submit the report by 5 PM"
+    Then translation should be displayed
 
-  @TC_ENG_TA
-  Scenario: Translate English sentence to Tamil
-    Given I open text translate from "en" to "ta"
-    When I translate the text "How are you today?"
-    Then I should see translation output
+  @TC_TEXT_EN_TA
+  Scenario: EN to Tamil translation
+    Given I navigate to Google Translate
+    And I select "Text" tab
+    And I select "English" as source language
+    And I select "Tamil" as target language
+    When I enter source text "Good morning. Please submit the report by 5 PM"
+    Then translation should be displayed
 
   @TC_SWAP_EN_SI
-  Scenario: Swap EN/SI languages reverses correctly
-    Given I open text translate from "en" to "si"
-    When I translate the text "Hello"
-    Then I should see translation output
-    When I swap the languages
-    Then translation still works for text "Test after swap"
+  Scenario: Swap EN to SI
+    Given I navigate to Google Translate
+    And I select "Text" tab
+    And I select "English" as source language
+    And I select "Sinhala" as target language
+    When I enter source text "Good morning"
+    Then translation should be displayed
+    When I click Swap
 
-  @TC_IMG_SI_EN
-  Scenario: Upload image with Sinhala text and translate to English
-    Given I open images translate from "si" to "en"
-    When I upload image "sinhala.png" for translation
-    Then I should see translation output
+  @TC_IMAGE_EN_SI
+  Scenario: Image EN to SI translation
+    Given I navigate to Google Translate
+    And I select "Images" tab
+    And I select "English" as source language
+    And I select "Sinhala" as target language
+    When I upload file "en_image.png"
+    Then Download button should be available
+    When I click Download
 
-  @TC_DOC_SI_EN
-  Scenario: Upload document with Sinhala text and translate to English
-    Given I open documents translate from "si" to "en"
-    When I upload document "sinhala.docx" for translation
-    Then I should be able to download the translated document
+  @TC_DOCUMENT_EN_SI
+  Scenario: Document EN to SI translation
+    Given I navigate to Google Translate
+    And I select "Documents" tab
+    And I select "English" as source language
+    And I select "Sinhala" as target language
+    When I upload file "en_doc.pdf"
+    Then Download button should be available
+    When I click Download
 
-  @TC_WEB_EN_SI
-  Scenario: Translate a valid English website to Sinhala
-    Given I translate website from "en" to "si"
-    Then the translated website should load
+  @TC_WEBSITE_EN_SI
+  Scenario: Website EN to SI translation
+    Given I navigate to Google Translate
+    And I select "Websites" tab
+    And I select "English" as source language
+    And I select "Sinhala" as target language
+    When I enter website URL "https://example.com"
+    And I click the arrow icon
+    Then translated website should be shown

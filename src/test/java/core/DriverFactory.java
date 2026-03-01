@@ -4,8 +4,6 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.io.InputStream;
 import java.time.Duration;
@@ -18,7 +16,7 @@ public class DriverFactory {
 
     static {
         try (InputStream is = DriverFactory.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (is == null) throw new RuntimeException("config.properties not found under src/test/resources");
+            if (is == null) throw new RuntimeException("config.properties not found in src/test/resources");
             PROPS.load(is);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load config.properties", e);
@@ -41,27 +39,24 @@ public class DriverFactory {
         String browser = getProp("browser").toLowerCase();
         boolean headless = Boolean.parseBoolean(getProp("headless"));
 
-        WebDriver driver;
-
-        switch (browser) {
-            case "firefox" -> {
-                WebDriverManager.firefoxdriver().setup();
-                FirefoxOptions options = new FirefoxOptions();
-                if (headless) options.addArguments("-headless");
-                driver = new FirefoxDriver(options);
-            }
-            case "chrome" -> {
-                WebDriverManager.chromedriver().setup();
-                ChromeOptions options = new ChromeOptions();
-                if (headless) options.addArguments("--headless=new");
-                options.addArguments("--window-size=1400,900");
-                options.addArguments("--disable-blink-features=AutomationControlled");
-                driver = new ChromeDriver(options);
-            }
-            default -> throw new IllegalArgumentException("Unsupported browser: " + browser);
+        if (!"chrome".equals(browser)) {
+            throw new IllegalArgumentException("This simple framework supports chrome only. Set browser=chrome");
         }
 
+        WebDriverManager.chromedriver().setup();
+
+        ChromeOptions options = new ChromeOptions();
+        if (headless) options.addArguments("--headless=new");
+        options.addArguments("--window-size=1400,900");
+        options.addArguments("--disable-notifications");
+        options.addArguments("--remote-allow-origins=*");
+
+        WebDriver driver = new ChromeDriver(options);
+
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(45));
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
+
         DRIVER.set(driver);
     }
 
