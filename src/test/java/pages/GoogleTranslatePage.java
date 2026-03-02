@@ -20,13 +20,13 @@ public class GoogleTranslatePage {
         return By.xpath("//*[(@role='tab' or self::button) and normalize-space()='" + tab + "']");
     }
 
-    // ---------- Language menus (tolerant) ----------
+    // ---------- Language menus  ----------
     private final By sourceLangMoreBtn = By.cssSelector("button[aria-label*='More source languages'], button[aria-label*='source language']");
     private final By targetLangMoreBtn = By.cssSelector("button[aria-label*='More target languages'], button[aria-label*='target language']");
     private final By languageSearchInput = By.cssSelector("input[aria-label*='Search languages'], input[aria-label*='Search']");
 
-    // Selected language labels on the top bar (best-effort)
-    private final By selectedSourceLangLabel = By.xpath("(//button[contains(@aria-label,'source') or contains(@aria-label,'Source')]//*[self::span or self::div])[last()]");
+    // Selected language labels on the top bar
+    private final By selectedSourceLangLabel =  By.xpath("//button[@role='tab' and @data-language-code='en']");
     private final By selectedTargetLangLabel = By.xpath("(//button[contains(@aria-label,'target') or contains(@aria-label,'Target')]//*[self::span or self::div])[last()]");
 
     // ---------- Text input/output ----------
