@@ -141,14 +141,22 @@ mvn test -Dcucumber.filter.tags="@TC_ENG_SI"
 
 ## 📊 Test Coverage
 
-### ✅ Automated Test Scenarios
+### ✅ Automated Regression Scenarios
 
-1. Translate English sentence to Sinhala
-2. Translate English sentence to Tamil
-3. Swap EN/SI languages reverses correctly
-4. Upload image with Sinhala text and translate to English
-5. Upload document with Sinhala text and translate to English
-6. Translate a valid English website to Sinhala
+| TC ID  | Scenario                                          | Mode     | Tag                |
+|--------|---------------------------------------------------|----------|--------------------|
+| TC-007 | Translate English sentence → Sinhala              | Text     | @TC_ENG_SI         |
+| TC-012 | Translate English sentence → Tamil                | Text     | @TC_ENG_TA         |
+| TC-019 | Swap EN/SI language pair reverses correctly       | Text     | @TC_SWAP_EN_SI     |
+| TC-049 | Upload Sinhala image → translate to English       | Image    | @TC_IMG_SI_EN      |
+| TC-079 | Upload Sinhala document → translate to English    | Document | @TC_DOC_SI_EN      |
+| TC-085 | Translate English Wikipedia page → Sinhala        | Website  | @TC_WEB_EN_SI      |
+
+### 📋 Full Manual Test Coverage
+| Document         | Location          | Total TCs | Passed | Failed |
+|------------------|-------------------|-----------|--------|--------|
+| Test Cases v2.0  | /docs folder      | 104       | 101    | 3      |
+| Bug Report v2.0  | /docs folder      | 3 bugs    | —      | —      |
 
 ---
 
