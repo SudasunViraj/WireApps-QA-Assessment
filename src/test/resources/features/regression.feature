@@ -55,6 +55,6 @@ Feature: Google Translate Regression Suite
     And I select "Websites" tab
     And I select "English" as source language
     And I select "Sinhala" as target language
-    When I enter website URL "https://example.com"
+    When I enter website URL "https://www.bbc.com/"
     And I click the arrow icon
     Then translated website should be shown
